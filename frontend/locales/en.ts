@@ -41,11 +41,11 @@ export const en = {
         badge: "2026 Career Resolution",
         title: "Verify Your",
         titleHighlight: "2026 Career Goal",
-        subtitle: "Don't just make a resolution—prove it. Interfinity AI verifies your readiness for your dream role with AI-powered accountability.",
+        subtitle: "Don't just make a resolution—prove it. Opik Agent verifies your readiness for your dream role with AI-powered accountability.",
         lovedBy: "Verified by 1,000+ Developers",
     },
     features: {
-        title: "Why Interfinity AI?",
+        title: "Why Opik Agent?",
         subtitle: "The accountability partner that actually checks your code.",
         cards: {
             voice: {
@@ -135,7 +135,7 @@ export const en = {
     },
     faq: {
         title: "Frequently Asked Questions",
-        subtitle: "Everything you need to know about Interfinity AI",
+        subtitle: "Everything you need to know about Opik Agent",
         items: {
             1: {
                 q: "How does the AI interviewer work?",
@@ -185,7 +185,7 @@ export const en = {
     },
     setup: {
         title: "Interview Configuration",
-        jobRole: "My Interview Practice",
+        jobRole: "My 2026 Resolution",
         uploadCV: "Upload Resume",
         optional: "(Optional)",
         skipCV: "Skip if you don't have a resume",
@@ -228,7 +228,7 @@ export const en = {
         cameraError: "Camera Error. Please check your device.",
         currentStage: "Current Stage",
         finish: "Finish",
-        agentConnected: "Interfinity AI Connected",
+        agentConnected: "Opik Agent Connected",
         agentWaiting: "Waiting for AI...",
         agentIssue: "Connection Unstable",
         checkLogs: "Check System Logs",

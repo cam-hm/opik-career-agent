@@ -16,8 +16,8 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Interfinity AI - Interview Practice Accountability",
-  description: "Turn your 2026 career resolutions into reality with Interfinity AI. AI-powered mock interviews integrated with Comet Opik for verified skill growth and accountability.",
+  title: "Opik Agent - 2026 Resolution Accountability",
+  description: "Turn your 2026 career resolutions into reality with Opik Agent. AI-powered mock interviews integrated with Comet Opik for verified skill growth and accountability.",
   robots: {
     index: false,
     follow: false,

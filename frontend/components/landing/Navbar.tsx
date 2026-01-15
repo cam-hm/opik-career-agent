@@ -19,12 +19,12 @@ export default function Navbar() {
                 <div className="flex items-center gap-2">
                     <Image
                         src="/logo.png"
-                        alt="Interfinity AI Logo"
+                        alt="Opik Agent Logo"
                         width={32}
                         height={32}
                         className="rounded"
                     />
-                    <span className="font-serif text-2xl font-bold tracking-tight text-[#424874] dark:text-[#A6B1E1]">Interfinity AI</span>
+                    <span className="font-serif text-2xl font-bold tracking-tight text-[#424874] dark:text-[#A6B1E1]">Opik Agent</span>
                 </div>
 
                 <div className="flex items-center gap-4">

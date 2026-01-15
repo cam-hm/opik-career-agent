@@ -90,7 +90,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                                 If
                             </div>
                             <span className="text-xl font-serif font-bold tracking-tight text-[#424874] dark:text-[#A6B1E1] lg:opacity-0 lg:sidebar-expanded:opacity-100 transition-opacity duration-200">
-                                Interfinity AI
+                                Opik Agent
                             </span>
                         </div>
                     </Link>

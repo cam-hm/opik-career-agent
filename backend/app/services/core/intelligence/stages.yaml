@@ -1,0 +1,21 @@
+stages:
+  - id: 1
+    type: "hr"
+    name: "HR Screening"
+    description: "Culture fit & soft skills"
+    persona_id: "hr_recruiter"
+    duration_minutes: 15
+
+  - id: 2
+    type: "technical"
+    name: "Technical Deep-Dive"
+    description: "Hard skills & domain expertise"
+    persona_id: "tech_lead"
+    duration_minutes: 30
+
+  - id: 3
+    type: "behavioral"
+    name: "Manager Round"
+    description: "Leadership & career goals"
+    persona_id: "behavioral_manager"
+    duration_minutes: 20

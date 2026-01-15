@@ -1,0 +1,74 @@
+steps:
+  # ========================================
+  # 1. BUILD DOCKER IMAGE
+  # ========================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-backend:${COMMIT_SHA}'
+      - '-t'
+      - 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-backend:latest'
+      - '--cache-from'
+      - 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-backend:latest'
+      - '.'
+
+  # ========================================
+  # 2. PUSH TO ARTIFACT REGISTRY
+  # ========================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push'
+    args: ['push', '--all-tags', 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-backend']
+    waitFor: ['build']
+
+  # ========================================
+  # 3. DEPLOY TO CLOUD RUN
+  # ========================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'interviewer-backend'
+      - '--image=asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-backend:${COMMIT_SHA}'
+      - '--region=asia-southeast1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=8080'
+      - '--memory=1Gi'
+      - '--min-instances=0'
+      - '--add-cloudsql-instances=${PROJECT_ID}:asia-southeast1:interviewer-db'
+      # Secrets
+      - '--set-secrets=DATABASE_URL=database-url:latest'
+      - '--set-secrets=GOOGLE_API_KEY=google-api-key:latest'
+      - '--set-secrets=LIVEKIT_API_KEY=livekit-api-key:latest'
+      - '--set-secrets=LIVEKIT_API_SECRET=livekit-api-secret:latest'
+      - '--set-secrets=DEEPGRAM_API_KEY=deepgram-api-key:latest'
+      - '--set-secrets=CARTESIA_API_KEY=cartesia-api-key:latest'
+      # Environment variables
+      - '--set-env-vars=GEMINI_MODEL=models/gemini-2.5-flash'
+      - '--set-env-vars=SHADOW_MODEL=models/gemini-2.5-flash'
+      - '--set-env-vars=LIVEKIT_URL=wss://interviewer-wo2fwm01.livekit.cloud'
+      - '--set-env-vars=RESET_DB_ON_STARTUP=${_RESET_DB}'
+    waitFor: ['push']
+
+# ========================================
+# OUTPUT IMAGES
+# ========================================
+images:
+  - 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-backend:${COMMIT_SHA}'
+  - 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-backend:latest'
+
+# ========================================
+# SUBSTITUTIONS
+# ========================================
+substitutions:
+  _RESET_DB: 'false'
+
+# ========================================
+# OPTIONS
+# ========================================
+options:
+  logging: CLOUD_LOGGING_ONLY

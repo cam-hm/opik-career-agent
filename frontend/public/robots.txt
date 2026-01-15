@@ -1,0 +1,8 @@
+# Robots.txt - Prevent search engine indexing
+# This is a testing/staging environment
+
+User-agent: *
+Disallow: /
+
+# Block all crawlers from indexing any page
+# Remove this file or modify when ready for production

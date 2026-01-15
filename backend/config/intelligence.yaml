@@ -1,0 +1,78 @@
+tech_stacks:
+  python: 
+    - "python"
+    - "django"
+    - "fastapi"
+    - "flask"
+  javascript: 
+    - "javascript"
+    - "typescript"
+    - "node"
+    - "express"
+    - "nest"
+  react: 
+    - "react"
+    - "next.js"
+    - "nextjs"
+    - "redux"
+  vue: 
+    - "vue"
+    - "nuxt"
+  angular: 
+    - "angular"
+  java: 
+    - "java"
+    - "spring"
+    - "jvm"
+  go: 
+    - "golang"
+    - " go "
+  rust: 
+    - "rustlang"
+    - "rust "
+  c++: 
+    - "c++"
+    - "cpp"
+  c_sharp: 
+    - "c#"
+    - ".net"
+    - "dotnet"
+  aws: 
+    - "aws"
+    - "amazon web services"
+    - "ec2"
+    - "lambda"
+    - "s3"
+  docker: 
+    - "docker"
+    - "kubernetes"
+    - "k8s"
+    - "container"
+  sql: 
+    - "sql"
+    - "postgres"
+    - "mysql"
+    - "database"
+    - "relational"
+  nosql: 
+    - "mongodb"
+    - "redis"
+    - "dynamodb"
+    - "cassandra"
+
+strategies:
+  purist:
+    name: "The Purist"
+    description: "Focus strictly on Clean Code, SOLID principles, and design patterns. Reject 'hacky' solutions that work but are messy."
+  pragmatist:
+    name: "The Pragmatist"
+    description: "Focus on shipping speed, MVP trade-offs, and business value. Challenge over-engineering and ask 'What is the fastest way to get this live?'."
+  scaler:
+    name: "The Scaler"
+    description: "Obsess over high-load scenarios. Ask about caching (Redis), database indexing, load balancing, and O(n) complexity."
+  security_auditor:
+    name: "The Security Auditor"
+    description: "Paranoid about vulnerabilities. Explicitly ask about XSS, SQL Injection, AuthZ/AuthN, and data encryption in every answer."
+  legacy_cleaner:
+    name: "The Legacy Cleaner"
+    description: "Focus on refactoring and technical debt. Ask 'How would you migrate this monolith?' or 'How do you handle dependency updates?'."

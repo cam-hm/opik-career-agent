@@ -1,0 +1,252 @@
+# Competency Framework Configuration
+# Defines competencies, rubrics, and role-based weights for interview evaluation
+
+competencies:
+  technical_depth:
+    name: "Technical Depth"
+    description: "Deep knowledge and expertise in technical domain"
+    dimensions:
+      - algorithms
+      - system_design
+      - code_quality
+      - debugging
+      - architecture
+      - data_structures
+      - performance_optimization
+    rubric:
+      "0-30": "Beginner - Basic understanding only, struggles with fundamentals"
+      "31-50": "Junior - Can apply concepts with guidance, limited experience"
+      "51-70": "Intermediate - Solid understanding, handles common scenarios"
+      "71-85": "Advanced - Deep understanding, handles edge cases, mentors others"
+      "86-100": "Expert - Industry-leading knowledge, innovates and architects"
+
+  communication:
+    name: "Communication"
+    description: "Clarity, structure, and effectiveness in verbal communication"
+    dimensions:
+      - clarity
+      - structure
+      - listening
+      - conciseness
+      - articulation
+      - explanation_ability
+    rubric:
+      "0-30": "Unclear - Rambling, hard to follow, poor structure"
+      "31-50": "Developing - Some structure, but often verbose or confusing"
+      "51-70": "Adequate - Generally clear, reasonable organization"
+      "71-85": "Strong - Clear, well-organized, engaging, adapts to audience"
+      "86-100": "Exceptional - Compelling communicator, inspires and persuades"
+
+  problem_solving:
+    name: "Problem Solving"
+    description: "Approach to analyzing and solving complex problems"
+    dimensions:
+      - analysis
+      - creativity
+      - methodology
+      - edge_cases
+      - decomposition
+      - root_cause_analysis
+    rubric:
+      "0-30": "Struggles - Cannot break down basic problems"
+      "31-50": "Basic - Can solve straightforward problems with hints"
+      "51-70": "Competent - Methodical approach, handles typical scenarios"
+      "71-85": "Strong - Systematic, considers edge cases, elegant solutions"
+      "86-100": "Exceptional - Innovative, finds non-obvious solutions, teaches others"
+
+  leadership:
+    name: "Leadership & Influence"
+    description: "Ability to lead, mentor, and influence without formal authority"
+    dimensions:
+      - influence
+      - decision_making
+      - mentoring
+      - conflict_resolution
+      - delegation
+      - vision
+    rubric:
+      "0-30": "Individual Contributor - Focuses only on own work"
+      "31-50": "Emerging - Shows some initiative, occasional mentoring"
+      "51-70": "Developing Leader - Takes ownership, influences peers"
+      "71-85": "Strong Leader - Proven track record, develops others"
+      "86-100": "Exceptional Leader - Inspires teams, strategic vision"
+
+  adaptability:
+    name: "Adaptability & Learning"
+    description: "Ability to learn quickly, adapt to change, and grow"
+    dimensions:
+      - learning_speed
+      - flexibility
+      - growth_mindset
+      - resilience
+      - curiosity
+    rubric:
+      "0-30": "Rigid - Resistant to change, slow to learn"
+      "31-50": "Slow Adapter - Needs time and support to adjust"
+      "51-70": "Flexible - Adapts with reasonable effort"
+      "71-85": "Quick Learner - Embraces change, picks up new skills fast"
+      "86-100": "Highly Adaptable - Thrives in ambiguity, continuous learner"
+
+  professionalism:
+    name: "Professionalism & Culture Fit"
+    description: "Professional demeanor, work ethic, and cultural alignment"
+    dimensions:
+      - work_ethic
+      - reliability
+      - collaboration
+      - integrity
+      - attitude
+    rubric:
+      "0-30": "Concerns - Red flags in professionalism or attitude"
+      "31-50": "Developing - Some rough edges, needs coaching"
+      "51-70": "Professional - Meets expectations, reliable"
+      "71-85": "Strong Professional - Role model, positive influence"
+      "86-100": "Exceptional - Outstanding culture carrier"
+
+# Competency weights by role level
+role_competency_weights:
+  "Software Engineer":
+    technical_depth: 0.45
+    communication: 0.15
+    problem_solving: 0.35
+    leadership: 0.05
+
+  "Senior Software Engineer":
+    technical_depth: 0.35
+    communication: 0.15
+    problem_solving: 0.30
+    leadership: 0.15
+    adaptability: 0.05
+
+  "Staff Engineer":
+    technical_depth: 0.30
+    communication: 0.20
+    problem_solving: 0.25
+    leadership: 0.20
+    adaptability: 0.05
+
+  "Engineering Manager":
+    leadership: 0.35
+    communication: 0.25
+    technical_depth: 0.15
+    problem_solving: 0.15
+    professionalism: 0.10
+
+  "Product Manager":
+    communication: 0.30
+    problem_solving: 0.25
+    leadership: 0.25
+    adaptability: 0.10
+    professionalism: 0.10
+
+  "Data Scientist":
+    technical_depth: 0.40
+    problem_solving: 0.35
+    communication: 0.15
+    adaptability: 0.10
+
+  "DevOps Engineer":
+    technical_depth: 0.40
+    problem_solving: 0.35
+    communication: 0.10
+    adaptability: 0.15
+
+  "default":
+    technical_depth: 0.35
+    communication: 0.20
+    problem_solving: 0.30
+    leadership: 0.10
+    adaptability: 0.05
+
+# Which competencies to focus on per interview stage
+stage_competency_focus:
+  hr:
+    - communication
+    - professionalism
+    - adaptability
+  technical:
+    - technical_depth
+    - problem_solving
+  behavioral:
+    - leadership
+    - communication
+    - adaptability
+  practice:
+    - technical_depth
+    - problem_solving
+    - communication
+
+# Dimension to competency mapping for scoring
+dimension_competency_map:
+  # Technical dimensions
+  algorithms: technical_depth
+  system_design: technical_depth
+  code_quality: technical_depth
+  debugging: technical_depth
+  architecture: technical_depth
+  data_structures: technical_depth
+  performance_optimization: technical_depth
+
+  # Communication dimensions
+  clarity: communication
+  structure: communication
+  listening: communication
+  conciseness: communication
+  articulation: communication
+  explanation_ability: communication
+
+  # Problem solving dimensions
+  analysis: problem_solving
+  creativity: problem_solving
+  methodology: problem_solving
+  edge_cases: problem_solving
+  decomposition: problem_solving
+  root_cause_analysis: problem_solving
+
+  # Leadership dimensions
+  influence: leadership
+  decision_making: leadership
+  mentoring: leadership
+  conflict_resolution: leadership
+  delegation: leadership
+  vision: leadership
+
+  # Adaptability dimensions
+  learning_speed: adaptability
+  flexibility: adaptability
+  growth_mindset: adaptability
+  resilience: adaptability
+  curiosity: adaptability
+
+  # Professionalism dimensions
+  work_ethic: professionalism
+  reliability: professionalism
+  collaboration: professionalism
+  integrity: professionalism
+  attitude: professionalism
+
+# Difficulty level definitions
+difficulty_levels:
+  foundational:
+    description: "Basic concepts and fundamentals"
+    score_range: "0-50"
+    question_complexity: "Single-step, recall-based"
+  intermediate:
+    description: "Applied knowledge and common scenarios"
+    score_range: "51-70"
+    question_complexity: "Multi-step, application-based"
+  advanced:
+    description: "Complex scenarios and edge cases"
+    score_range: "71-85"
+    question_complexity: "Analysis and synthesis required"
+  expert:
+    description: "Industry-leading, architectural decisions"
+    score_range: "86-100"
+    question_complexity: "Innovation and strategic thinking"
+
+# Thresholds for adaptive difficulty
+difficulty_thresholds:
+  increase_threshold: 80  # Score above this triggers difficulty increase
+  decrease_threshold: 50  # Score below this triggers difficulty decrease
+  min_turns_at_level: 2   # Minimum turns before changing difficulty
+  confidence_window: 3    # Number of recent scores to consider

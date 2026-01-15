@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: opik_agent
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: opik-agent-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/opik_agent
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/service_account.json
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  worker:
+    build: .
+    container_name: opik-agent-worker
+    command: python -m app.agents.server dev
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/opik_agent
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/service_account.json
+    volumes:
+      - .:/app
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:

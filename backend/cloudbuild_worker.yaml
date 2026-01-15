@@ -1,0 +1,51 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-worker:${COMMIT_SHA}'
+      - '-t'
+      - 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-worker:latest'
+      - '.'
+
+  # Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '--all-tags', 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-worker']
+
+  # Deploy to Cloud Run with secrets
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'interviewer-worker'
+      - '--image=asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-worker:${COMMIT_SHA}'
+      - '--region=asia-southeast1'
+      - '--platform=managed'
+      - '--no-allow-unauthenticated'
+      - '--port=8080'
+      - '--command=bash'
+      - '--args=worker_entrypoint.sh' 
+      - '--min-instances=1'
+      - '--memory=4Gi'
+      - '--add-cloudsql-instances=${PROJECT_ID}:asia-southeast1:interviewer-db'
+      # Use Secret Manager for ALL sensitive values
+      - '--set-secrets=DATABASE_URL=database-url:latest'
+      - '--set-secrets=GOOGLE_API_KEY=google-api-key:latest'
+      - '--set-secrets=LIVEKIT_API_KEY=livekit-api-key:latest'
+      - '--set-secrets=LIVEKIT_API_SECRET=livekit-api-secret:latest'
+      - '--set-secrets=DEEPGRAM_API_KEY=deepgram-api-key:latest'
+      - '--set-secrets=CARTESIA_API_KEY=cartesia-api-key:latest'
+      # Non-sensitive config as env vars
+      - '--set-env-vars=GEMINI_MODEL=models/gemini-2.5-flash'
+      - '--set-env-vars=SHADOW_MODEL=models/gemini-2.5-flash'
+      - '--set-env-vars=LIVEKIT_URL=wss://interviewer-wo2fwm01.livekit.cloud'
+      - '--set-env-vars=PYTHONUNBUFFERED=1'
+
+images:
+  - 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-worker:${COMMIT_SHA}'
+  - 'asia-southeast1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/interviewer-worker:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

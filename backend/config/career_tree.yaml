@@ -1,0 +1,230 @@
+# 🌳 Victory Road: Career Tree Configuration
+# UNIVERSAL EDITION - Duolingo-Style Path
+# 
+# This defines the "Meta-Layer" of progression.
+# Specific interview questions are determined by the user's selected Role/Persona, not this tree.
+#
+# Layout System:
+#   - section: Groups nodes into visual sections with headers
+#   - order: Sequential order for snake path layout (1, 2, 3...)
+#   - icon: Emoji displayed on the node
+
+ranks:
+  1: "Associate / Intern"
+  2: "Junior Professional"
+  3: "Mid-Level Professional"
+  4: "Senior Professional"
+  5: "Staff / Lead"
+  6: "Principal / Director"
+  10: "Executive / Fellow"
+
+sections:
+  - id: "onboarding"
+    title: "Getting Started"
+    order: 1
+  - id: "associate"
+    title: "Associate Level"
+    order: 2
+  - id: "junior"
+    title: "Junior Level"
+    order: 3
+  - id: "mid"
+    title: "Mid-Level"
+    order: 4
+
+nodes:
+  # ═══════════════════════════════════════════════════════════════
+  # SECTION: Getting Started (Onboarding)
+  # ═══════════════════════════════════════════════════════════════
+  - id: "node_associate_start"
+    title: "Welcome"
+    section: "onboarding"
+    order: 1
+    icon: "🚀"
+    rank_required: 1
+    type: "milestone"
+    description: "Welcome to Victory Road! Complete your profile to begin your journey."
+    criteria: 
+      action: "profile_setup"
+    unlocks: ["node_associate_behavioral"]
+
+  # ═══════════════════════════════════════════════════════════════
+  # SECTION: Associate Level (Rank 1)
+  # ═══════════════════════════════════════════════════════════════
+  - id: "node_associate_behavioral"
+    title: "Culture Fit"
+    section: "associate"
+    order: 2
+    icon: "💬"
+    rank_required: 1
+    type: "interview"
+    description: "Demonstrate your alignment with core values and teamwork using the STAR method."
+    criteria:
+      min_score: 60
+      stage_type: "behavioral"
+    unlocks: ["node_associate_core"]
+    metadata:
+      duration: "15m"
+      difficulty: "Easy"
+
+  - id: "node_associate_core"
+    title: "Core Skills I"
+    section: "associate"
+    order: 3
+    icon: "🎯"
+    rank_required: 1
+    type: "interview"
+    description: "Prove your fundamental hard skills for your chosen role."
+    criteria:
+      min_score: 60
+      stage_type: "technical"
+    unlocks: ["node_junior_gate"]
+    metadata:
+      duration: "20m"
+      difficulty: "Easy"
+  
+  - id: "node_junior_gate"
+    title: "Level Up!"
+    section: "associate"
+    order: 4
+    icon: "⭐"
+    rank_required: 1
+    type: "interview_gate"
+    description: "The Bar Raiser. Demonstrate readiness for independent work."
+    criteria:
+      min_score: 75
+      stage_type: "technical"
+    unlocks: ["node_junior_deep", "node_junior_strategy"]
+    rewards:
+      rank_up: 2
+    metadata:
+      duration: "30m"
+      difficulty: "Medium"
+      fail_rate: "35%"
+
+  # ═══════════════════════════════════════════════════════════════
+  # SECTION: Junior Level (Rank 2)
+  # ═══════════════════════════════════════════════════════════════
+  - id: "node_junior_deep"
+    title: "Deep Dive"
+    section: "junior"
+    order: 5
+    icon: "🔬"
+    rank_required: 2
+    type: "interview"
+    description: "Deep dive into complex scenarios within your domain expertise."
+    criteria:
+      min_score: 70
+      stage_type: "technical"
+    unlocks: ["node_mid_gate"]
+    metadata:
+      duration: "25m"
+      difficulty: "Medium"
+
+  - id: "node_junior_strategy"
+    title: "Strategy I"
+    section: "junior"
+    order: 6
+    icon: "🧩"
+    rank_required: 2
+    type: "interview"
+    description: "Analyze a complex situation and propose a scalable solution."
+    criteria:
+      min_score: 70
+      stage_type: "technical"
+    unlocks: ["node_mid_gate"]
+    metadata:
+      duration: "25m"
+      difficulty: "Medium"
+
+  - id: "node_junior_side_project"
+    title: "Side Quest"
+    section: "junior"
+    order: 7
+    icon: "🎮"
+    rank_required: 2
+    type: "side_quest"
+    description: "Optional challenge! Debug a legacy codebase for bonus XP."
+    criteria:
+      min_score: 50
+      stage_type: "technical"
+    unlocks: []
+    rewards:
+      xp_bonus: 100
+    metadata:
+      duration: "15m"
+      difficulty: "Easy"
+      reward: "+100 XP"
+
+  - id: "node_mid_gate"
+    title: "Promotion Review"
+    section: "junior"
+    order: 8
+    icon: "🏆"
+    rank_required: 2
+    type: "interview_gate"
+    description: "Prove you can handle ambiguity and lead initiatives."
+    criteria:
+      min_score: 80
+      min_nodes_completed: 2
+    unlocks: ["node_mid_system_design", "node_mid_leadership"]
+    rewards:
+      rank_up: 3
+    metadata:
+      duration: "35m"
+      difficulty: "Hard"
+      fail_rate: "45%"
+
+  # ═══════════════════════════════════════════════════════════════
+  # SECTION: Mid-Level (Rank 3)
+  # ═══════════════════════════════════════════════════════════════
+  - id: "node_mid_system_design"
+    title: "System Design"
+    section: "mid"
+    order: 9
+    icon: "🏗️"
+    rank_required: 3
+    type: "interview"
+    description: "Design a scalable system architecture from scratch."
+    criteria:
+      min_score: 75
+      stage_type: "system_design"
+    unlocks: ["node_senior_gate"]
+    metadata:
+      duration: "45m"
+      difficulty: "Hard"
+
+  - id: "node_mid_leadership"
+    title: "Lead & Mentor"
+    section: "mid"
+    order: 10
+    icon: "👥"
+    rank_required: 3
+    type: "interview"
+    description: "Demonstrate your ability to lead and mentor junior team members."
+    criteria:
+      min_score: 75
+      stage_type: "behavioral"
+    unlocks: ["node_senior_gate"]
+    metadata:
+      duration: "30m"
+      difficulty: "Medium"
+
+  - id: "node_senior_gate"
+    title: "BOSS FIGHT"
+    section: "mid"
+    order: 11
+    icon: "👹"
+    rank_required: 3
+    type: "boss_fight"
+    description: "The ultimate challenge. A comprehensive assessment of all your skills."
+    criteria:
+      min_score: 85
+      min_nodes_completed: 4
+    unlocks: []
+    rewards:
+      rank_up: 4
+    metadata:
+      duration: "60m"
+      difficulty: "Expert"
+      fail_rate: "60%"

@@ -160,7 +160,7 @@ class OpikProvider(ObservabilityProvider):
                 tags.append(metadata.stage_type)
             if metadata.job_role:
                 tags.append(metadata.job_role)
-                tags.append(f"job_role:{metadata.job_role}")
+                tags.append(f"2026_resolution:{metadata.job_role}")
             if metadata.language:
                 tags.append(f"lang:{metadata.language}")
 

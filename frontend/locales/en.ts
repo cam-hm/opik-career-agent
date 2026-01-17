@@ -41,7 +41,7 @@ export const en = {
         badge: "2026 Career Resolution",
         title: "Verify Your",
         titleHighlight: "2026 Career Goal",
-        subtitle: "Don't just make a resolution—prove it. Opik Agent verifies your readiness for your dream role with AI-powered accountability.",
+        subtitle: "A New Year's resolution needs a plan. Opik Agent uses Comet Opik's observability stack to trace, evaluate, and verify your interview readiness with 100% data-driven accuracy.",
         lovedBy: "Verified by 1,000+ Developers",
     },
     features: {
@@ -53,8 +53,8 @@ export const en = {
                 desc: "We don't just take your word for it. Our agent tests your actual knowledge of the role you aspire to.",
             },
             feedback: {
-                title: "Opik Verified",
-                desc: "Get an objective 'Readiness Score' powered by Comet Opik to see how close you are to your goal.",
+                title: "Powered by Comet Opik",
+                desc: "No black boxes. Every question and evaluation is traced and scored by Opik's LLM evaluation engine to ensure feedback is grounded, not hallucinated.",
             },
             safe: {
                 title: "Growth Sandbox",
@@ -74,8 +74,8 @@ export const en = {
                 desc: "Check your mic and prepare for a realistic technical or behavioral screening.",
             },
             3: {
-                title: "Get Analyzed",
-                desc: "Receive a breakdown of your technical accuracy, communication skills, and seniority level.",
+                title: "Get Verified Feedback",
+                desc: "Receive a detailed evaluation report with underlying Opik traces to prove your seniority level.",
             }
         }
     },

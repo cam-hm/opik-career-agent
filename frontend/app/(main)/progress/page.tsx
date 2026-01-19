@@ -12,7 +12,9 @@ import {
     ArrowUpRight,
     ArrowDownRight,
     Minus,
-    ExternalLink
+    ExternalLink,
+    Activity,
+    Sparkles
 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/api";
 import { ENDPOINTS } from "@/lib/endpoints";
@@ -28,6 +30,7 @@ import {
 import ResolutionTracker from "@/components/progress/ResolutionTracker";
 import SkillGapAnalysis from "@/components/progress/SkillGapAnalysis";
 import WeeklyInsights from "@/components/progress/WeeklyInsights";
+import { getOpikDashboardUrl, getOpikTraceUrl } from "@/lib/opik";
 
 interface InterviewSession {
     session_id: string;
@@ -260,6 +263,9 @@ export default function ProgressPage() {
         ? Math.max(...completedSessions.map(s => s.overall_score || 0))
         : 0;
 
+    // Count sessions with Opik traces
+    const trackedSessionsCount = sessions.filter(s => s.opik_trace_id).length;
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -344,6 +350,42 @@ export default function ProgressPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Opik Observability Banner */}
+            {trackedSessionsCount > 0 && (
+                <div className="bg-gradient-to-r from-[#424874]/5 via-[#A6B1E1]/10 to-[#424874]/5 dark:from-[#424874]/20 dark:via-[#A6B1E1]/15 dark:to-[#424874]/20 rounded-lg border border-[#424874]/20 dark:border-[#A6B1E1]/20 p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-white dark:bg-gray-800 border border-[#424874]/20 dark:border-[#A6B1E1]/20 flex items-center justify-center">
+                                <Activity className="w-6 h-6 text-[#424874] dark:text-[#A6B1E1]" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+                                        AI Observability
+                                    </h3>
+                                    <span className="flex items-center gap-1 text-xs text-[#424874] dark:text-[#A6B1E1] bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full border border-[#424874]/20 dark:border-[#A6B1E1]/20">
+                                        <Sparkles className="w-3 h-3" />
+                                        Powered by Opik
+                                    </span>
+                                </div>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                                    {trackedSessionsCount} interview{trackedSessionsCount !== 1 ? 's' : ''} with full AI tracing and evaluation
+                                </p>
+                            </div>
+                        </div>
+                        <a
+                            href={getOpikDashboardUrl()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 bg-[#424874] hover:bg-[#363B5E] text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                            <ExternalLink className="w-4 h-4" />
+                            Open Opik Dashboard
+                        </a>
+                    </div>
+                </div>
+            )}
 
             {/* Resolution Tracker */}
             <ResolutionTracker
@@ -464,7 +506,7 @@ export default function ProgressPage() {
                                     </Link>
                                     {session.opik_trace_id && (
                                         <a
-                                            href={`https://www.comet.com/opik/traces/${session.opik_trace_id}`}
+                                            href={getOpikTraceUrl(session.opik_trace_id)}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex items-center gap-1 px-2 py-1.5 text-xs text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"

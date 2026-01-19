@@ -40,6 +40,7 @@ Configuration (in .env):
 from .decorators import (
     get_current_trace_id,
     get_current_span_id,
+    set_current_session_id,
     log_turn_event,
     trace_function,
     trace_llm_call,
@@ -90,6 +91,7 @@ __all__ = [
     "log_turn_event",
     "get_current_trace_id",
     "get_current_span_id",
+    "set_current_session_id",
     # Tracers
     "InterviewTracer",
     "ShadowMonitorTracer",

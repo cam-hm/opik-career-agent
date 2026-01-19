@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
-async def generate_job_description(job_role: str, language: str = 'en') -> str:
+async def generate_job_description(job_role: str, language: str = 'en', session_id: str = None) -> str:
     """Generate a job description for a given role."""
     
     lang_instruction = "Respond in English."
@@ -42,10 +42,10 @@ async def generate_job_description(job_role: str, language: str = 'en') -> str:
         return f"Standard Job Description for {job_role}"
 
 
-async def analyze_resume(resume_text: str, job_description: str = None) -> dict:
+async def analyze_resume(resume_text: str, job_description: str = None, session_id: str = None) -> dict:
     """
     Analyze a resume against a job description.
-    
+
     Returns:
         dict with summary, strengths, weaknesses, suggested_questions, overall_score
     """
@@ -97,7 +97,7 @@ async def analyze_resume(resume_text: str, job_description: str = None) -> dict:
 
         # Log to Opik (provider handles truncation)
         await observability_service.log_llm_call(
-            trace_id=get_current_trace_id(),
+            trace_id=get_current_trace_id(session_id=session_id),
             model=settings.GEMINI_MODEL,
             input_prompt=prompt,  # Full prompt
             output_response=response.text,  # Full response
@@ -118,7 +118,7 @@ async def analyze_resume(resume_text: str, job_description: str = None) -> dict:
         await observability_service.record_metric(
             metric_name="resume_analysis_score",
             value=float(overall_score) / 100.0,  # Normalize to 0-1
-            trace_id=get_current_trace_id(),
+            trace_id=get_current_trace_id(session_id=session_id),
             metadata={
                 "raw_score": overall_score,
                 "strengths_count": len(result.get("strengths", [])),
@@ -144,7 +144,8 @@ async def _check_feedback_hallucination(
     feedback: dict,
     transcript_text: str,
     resume_text: str = None,
-    job_description: str = None
+    job_description: str = None,
+    session_id: str = None
 ) -> float | None:
     """
     Check if AI-generated feedback contains hallucinated information.
@@ -210,7 +211,7 @@ Score guide:
 
         # Log to Opik (provider handles truncation)
         await observability_service.log_llm_call(
-            trace_id=get_current_trace_id(),
+            trace_id=get_current_trace_id(session_id=session_id),
             model=settings.GEMINI_MODEL,
             input_prompt=prompt,  # Full prompt
             output_response=response.text,  # Full response
@@ -228,7 +229,7 @@ Score guide:
         await observability_service.record_metric(
             metric_name="feedback_hallucination_score",
             value=hallucination_score,
-            trace_id=get_current_trace_id(),
+            trace_id=get_current_trace_id(session_id=session_id),
             metadata={
                 "reason": result.get("reason", ""),
                 "flagged_count": len(result.get("flagged_claims", []))
@@ -246,7 +247,8 @@ Score guide:
 async def generate_feedback(
     transcript: list,
     resume_text: str = None,
-    job_description: str = None
+    job_description: str = None,
+    session_id: str = None
 ) -> dict:
     """
     Generate interview feedback from transcript.
@@ -301,7 +303,7 @@ async def generate_feedback(
 
         # Log to Opik (provider handles truncation)
         await observability_service.log_llm_call(
-            trace_id=get_current_trace_id(),
+            trace_id=get_current_trace_id(session_id=session_id),
             model=settings.GEMINI_MODEL,
             input_prompt=prompt,  # Full prompt
             output_response=response.text,  # Full response
@@ -322,7 +324,7 @@ async def generate_feedback(
         await observability_service.record_metric(
             metric_name="interview_feedback_score",
             value=float(feedback_score) / 100.0,  # Normalize to 0-1
-            trace_id=get_current_trace_id(),
+            trace_id=get_current_trace_id(session_id=session_id),
             metadata={
                 "raw_score": feedback_score,
                 "pros_count": len(result.get("pros", [])),
@@ -338,7 +340,8 @@ async def generate_feedback(
                 feedback=result,
                 transcript_text=transcript_text,
                 resume_text=resume_text,
-                job_description=job_description
+                job_description=job_description,
+                session_id=session_id
             )
             if hallucination_score is not None:
                 result["hallucination_score"] = hallucination_score

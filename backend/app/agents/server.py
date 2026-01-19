@@ -110,7 +110,8 @@ async def interview_agent(ctx: agents.JobContext):
     # Create initial candidate profile
     candidate_profile = await candidate_profile_manager.create_initial_profile(
         resume_text=resume_text,
-        job_description=jd_text
+        job_description=jd_text,
+        session_id=ctx.room.name
     )
     logger.info(f"📊 Candidate profile initialized with {len(candidate_profile.verified_skills)} claimed skills")
 
@@ -221,6 +222,9 @@ async def interview_agent(ctx: agents.JobContext):
         observability_service.register_session_trace(ctx.room.name, session_trace_id)
         # Also set ContextVar for same-task calls (token not stored - can't reset across contexts)
         _current_trace_id.set(session_trace_id)
+        # Set session ID in context for automatic trace lookup in spawned tasks
+        from app.services.core.observability import set_current_session_id
+        set_current_session_id(ctx.room.name)
         # Persist trace_id to database for frontend access
         try:
             async with AsyncSessionLocal() as db:
@@ -374,7 +378,7 @@ async def interview_agent(ctx: agents.JobContext):
     last_assistant_message = ""
 
     # Intelligence v2: Async scoring and profile update
-    async def process_user_response(question: str, answer: str, turn_num: int):
+    async def process_user_response(question: str, answer: str, turn_num: int, session_id: str):
         """Process user response with scoring and profile updates."""
         nonlocal candidate_profile, difficulty_state
 
@@ -385,7 +389,8 @@ async def interview_agent(ctx: agents.JobContext):
                 answer=answer,
                 stage_type=stage_type,
                 job_role=job_role,
-                context={"profile": candidate_profile.to_dict()}
+                context={"profile": candidate_profile.to_dict()},
+                session_id=session_id
             )
 
             # Record the score
@@ -418,7 +423,8 @@ async def interview_agent(ctx: agents.JobContext):
                 profile=candidate_profile,
                 question=question,
                 answer=answer,
-                score=score_result.overall
+                score=score_result.overall,
+                session_id=session_id
             )
 
             # Update difficulty based on score
@@ -466,7 +472,8 @@ async def interview_agent(ctx: agents.JobContext):
                     asyncio.create_task(process_user_response(
                         question=last_assistant_message,
                         answer=text,
-                        turn_num=len(conversation_history)
+                        turn_num=len(conversation_history),
+                        session_id=ctx.room.name
                     ))
 
         except Exception as e:

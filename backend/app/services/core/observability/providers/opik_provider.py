@@ -328,10 +328,23 @@ class OpikProvider(ObservabilityProvider):
             return None
 
         try:
+            # DEBUG: Log trace_id status
+            component = metadata.get("component") if metadata else "unknown"
+            if trace_id:
+                logger.debug(f"log_llm_call received trace_id: {trace_id[:12]}... (component={component})")
+            else:
+                logger.warning(f"⚠️  log_llm_call received NULL trace_id! Component: {component}")
+
             # Get parent trace if available
             parent_trace = None
             if trace_id and trace_id in self._active_traces:
                 parent_trace = self._active_traces[trace_id]["trace"]
+                logger.debug(f"✓ Found parent trace in _active_traces (component={component})")
+            elif trace_id:
+                active_trace_ids = list(self._active_traces.keys())[:3]
+                logger.warning(f"⚠️  trace_id {trace_id[:12]}... NOT FOUND in _active_traces! Active traces: {[tid[:12] for tid in active_trace_ids]}... (component={component})")
+            else:
+                logger.warning(f"⚠️  No trace_id provided - span will be orphaned! (component={component})")
 
             # Prepare metadata
             meta = {"model": model, **(metadata or {})}

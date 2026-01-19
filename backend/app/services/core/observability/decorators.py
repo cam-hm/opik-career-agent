@@ -18,11 +18,70 @@ logger = logging.getLogger("observability")
 # Context variables for propagating trace context
 _current_trace_id: ContextVar[Optional[str]] = ContextVar('current_trace_id', default=None)
 _current_span_id: ContextVar[Optional[str]] = ContextVar('current_span_id', default=None)
+_current_session_id: ContextVar[Optional[str]] = ContextVar('current_session_id', default=None)
 
 
-def get_current_trace_id() -> Optional[str]:
-    """Get the current trace ID from context."""
-    return _current_trace_id.get()
+def get_current_trace_id(session_id: Optional[str] = None) -> Optional[str]:
+    """
+    Get current trace ID with multi-tier fallback strategy.
+
+    Fallback chain:
+    1. Explicit session_id param → Registry lookup (works across async tasks)
+    2. Trace ContextVar (works within same async call chain)
+    3. Session ContextVar + Registry lookup (LiveKit event handlers)
+    4. None
+
+    This handles LiveKit's async task boundaries where ContextVars don't propagate.
+
+    Args:
+        session_id: Optional session ID for explicit registry lookup
+
+    Returns:
+        trace_id or None
+    """
+    # Strategy 1: Explicit session_id provided (highest priority)
+    if session_id:
+        from .service import observability_service
+        trace_id = observability_service.get_trace_for_session(session_id)
+        if trace_id:
+            logger.debug(f"✓ Trace ID from explicit session_id: {trace_id[:12]}... (session={session_id})")
+            return trace_id
+        else:
+            logger.warning(f"✗ No trace found for session_id: {session_id}")
+
+    # Strategy 2: Trace ContextVar (works within same task)
+    trace_id = _current_trace_id.get()
+    if trace_id:
+        logger.debug(f"✓ Trace ID from ContextVar: {trace_id[:12]}...")
+        return trace_id
+
+    # Strategy 3: Session ContextVar + registry lookup
+    # (Handles cases where trace ContextVar lost but session ContextVar preserved)
+    session_id = _current_session_id.get()
+    if session_id:
+        from .service import observability_service
+        result = observability_service.get_trace_for_session(session_id)
+        if result:
+            logger.debug(f"✓ Trace ID from session ContextVar + registry: {result[:12]}... (session={session_id})")
+        else:
+            logger.warning(f"✗ Session ContextVar set but no trace in registry: {session_id}")
+        return result
+
+    logger.warning("✗ No trace ID found (all strategies failed)")
+    return None
+
+
+def set_current_session_id(session_id: str):
+    """
+    Set current session ID in context.
+
+    Call this after session trace creation to enable automatic trace lookup
+    in spawned async tasks.
+
+    Args:
+        session_id: Session identifier
+    """
+    _current_session_id.set(session_id)
 
 
 def get_current_span_id() -> Optional[str]:

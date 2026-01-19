@@ -150,7 +150,8 @@ Return JSON:
     async def create_initial_profile(
         self,
         resume_text: str,
-        job_description: str
+        job_description: str,
+        session_id: Optional[str] = None
     ) -> CandidateProfile:
         """Build initial profile from resume and job description."""
         profile = CandidateProfile()
@@ -165,11 +166,34 @@ Return JSON:
                 job_description=job_description[:2000] if job_description else "Not provided"
             )
 
+            start_time = time.time()
+
             response = await self.client.aio.models.generate_content(
                 model=self.model,
                 contents=prompt,
                 config={"response_mime_type": "application/json"}
             )
+
+            latency = (time.time() - start_time) * 1000
+
+            # Log to Opik observability
+            try:
+                from app.services.core.observability import observability_service, get_current_trace_id
+                await observability_service.log_llm_call(
+                    trace_id=get_current_trace_id(session_id=session_id),
+                    model=self.model,
+                    input_prompt=prompt,
+                    output_response=response.text,
+                    metadata={
+                        "component": "candidate_profile",
+                        "action": "create_initial_profile",
+                        "resume_length": len(resume_text),
+                        "jd_length": len(job_description) if job_description else 0
+                    },
+                    latency_ms=latency
+                )
+            except Exception as obs_error:
+                logger.warning(f"Observability logging failed: {obs_error}")
 
             data = json.loads(response.text)
 
@@ -203,7 +227,8 @@ Return JSON:
         profile: CandidateProfile,
         question: str,
         answer: str,
-        score: float
+        score: float,
+        session_id: Optional[str] = None
     ) -> CandidateProfile:
         """Update profile after each Q&A turn."""
         profile.current_turn += 1
@@ -232,11 +257,35 @@ Return JSON:
                 }, indent=2)
             )
 
+            start_time = time.time()
+
             response = await self.client.aio.models.generate_content(
                 model=self.model,
                 contents=prompt,
                 config={"response_mime_type": "application/json"}
             )
+
+            latency = (time.time() - start_time) * 1000
+
+            # Log to Opik observability
+            try:
+                from app.services.core.observability import observability_service, get_current_trace_id
+                await observability_service.log_llm_call(
+                    trace_id=get_current_trace_id(session_id=session_id),
+                    model=self.model,
+                    input_prompt=prompt,
+                    output_response=response.text,
+                    metadata={
+                        "component": "candidate_profile",
+                        "action": "update_after_turn",
+                        "turn": profile.current_turn,
+                        "answer_score": score,
+                        "question_preview": question[:100]
+                    },
+                    latency_ms=latency
+                )
+            except Exception as obs_error:
+                logger.warning(f"Observability logging failed: {obs_error}")
 
             data = json.loads(response.text)
 

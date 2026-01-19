@@ -40,4 +40,9 @@ export const ENDPOINTS = {
         WEEKLY_INSIGHTS: `${API_PREFIX}/progress/insights/weekly`,
         HISTORY: `${API_PREFIX}/progress/history`,
     },
+    ANALYTICS: {
+        OVERVIEW: `${API_PREFIX}/analytics/overview`,
+        EVALUATION: `${API_PREFIX}/analytics/evaluation`,
+        COMPONENTS: `${API_PREFIX}/analytics/components`,
+    },
 } as const;

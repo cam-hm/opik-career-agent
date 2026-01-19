@@ -1,5 +1,5 @@
 /**
- * Design Tokens - Interfinity AI
+ * Design Tokens - Opik Agent
  * 
  * Color Palette from ColorHunt: #F4EEFF, #DCD6F7, #A6B1E1, #424874
  * Purple/Lavender theme - Soft and professional

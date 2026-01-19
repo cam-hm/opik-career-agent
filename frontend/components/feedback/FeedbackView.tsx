@@ -2,9 +2,15 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, Trophy, TrendingUp, AlertCircle, MessageSquare, ExternalLink } from 'lucide-react';
+import { CheckCircle, Trophy, TrendingUp, AlertCircle, MessageSquare, ExternalLink, Activity, BarChart3, Sparkles } from 'lucide-react';
 import { getScoreColor, getScoreBg } from "@/lib/design-tokens";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getOpikTraceUrl } from "@/lib/opik";
+
+interface CompetencyScore {
+    score: number;
+    rubric_level?: string;
+}
 
 interface Feedback {
     score: number;
@@ -13,6 +19,12 @@ interface Feedback {
     cons: string[];
     feedback: string;
     opik_trace_id?: string;
+    competency_scores?: Record<string, CompetencyScore>;
+    skill_assessments?: Array<{
+        turn: number;
+        score: number;
+        dimension?: string;
+    }>;
 }
 
 interface FeedbackViewProps {
@@ -49,17 +61,6 @@ export default function FeedbackView({ feedback, sessionDetails }: FeedbackViewP
                     >
                         {t('feedback.continueApp')}
                     </button>
-                )}
-                {feedback.opik_trace_id && (
-                    <a
-                        href={`https://www.comet.com/opik/traces/${feedback.opik_trace_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full mt-3 py-2 text-sm text-[#424874] dark:text-[#A6B1E1] hover:text-[#363B5E] dark:hover:text-white border border-[#424874]/30 dark:border-[#A6B1E1]/30 rounded-md transition-colors"
-                    >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        View AI Trace on Opik
-                    </a>
                 )}
             </div>
 
@@ -124,6 +125,103 @@ export default function FeedbackView({ feedback, sessionDetails }: FeedbackViewP
                     </div>
                 </div>
             )}
+
+            {/* AI Evaluation Insights - Powered by Opik */}
+            {(feedback.competency_scores || feedback.opik_trace_id) && (
+                <div className="bg-gradient-to-br from-[#424874]/5 to-[#A6B1E1]/10 dark:from-[#424874]/20 dark:to-[#A6B1E1]/10 rounded-lg border border-[#424874]/20 dark:border-[#A6B1E1]/20 p-5 lg:col-span-3">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-100">
+                            <Sparkles className="w-4 h-4 text-[#424874] dark:text-[#A6B1E1]" />
+                            AI Evaluation Insights
+                        </h3>
+                        <span className="flex items-center gap-1.5 text-xs text-[#424874] dark:text-[#A6B1E1] bg-white dark:bg-gray-800 px-2 py-1 rounded-full border border-[#424874]/20 dark:border-[#A6B1E1]/20">
+                            <Activity className="w-3 h-3" />
+                            Powered by Opik
+                        </span>
+                    </div>
+
+                    {/* Competency Scores Grid */}
+                    {feedback.competency_scores && Object.keys(feedback.competency_scores).length > 0 && (
+                        <div className="mb-4">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1">
+                                <BarChart3 className="w-3 h-3" />
+                                Competency Breakdown
+                            </p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {Object.entries(feedback.competency_scores).map(([key, value]) => (
+                                    <div
+                                        key={key}
+                                        className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700"
+                                    >
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize mb-1">
+                                            {key.replace(/_/g, ' ')}
+                                        </p>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className={`text-xl font-bold ${getCompetencyColor(value.score)}`}>
+                                                {value.score}
+                                            </span>
+                                            {value.rubric_level && (
+                                                <span className="text-xs text-gray-400 dark:text-gray-500">
+                                                    {value.rubric_level}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {/* Progress bar */}
+                                        <div className="mt-2 h-1 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full rounded-full transition-all ${getCompetencyBgColor(value.score)}`}
+                                                style={{ width: `${value.score}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Opik Trace CTA */}
+                    {feedback.opik_trace_id && (
+                        <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-[#424874]/10 dark:bg-[#A6B1E1]/10 flex items-center justify-center">
+                                    <Activity className="w-5 h-5 text-[#424874] dark:text-[#A6B1E1]" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                                        Full AI Trace Available
+                                    </p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        View complete LLM calls, evaluation scores, and latency metrics
+                                    </p>
+                                </div>
+                            </div>
+                            <a
+                                href={getOpikTraceUrl(feedback.opik_trace_id)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 py-2 bg-[#424874] hover:bg-[#363B5E] text-white text-sm font-medium rounded-lg transition-colors"
+                            >
+                                <ExternalLink className="w-4 h-4" />
+                                View on Opik
+                            </a>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
+}
+
+function getCompetencyColor(score: number): string {
+    if (score >= 80) return "text-green-600 dark:text-green-400";
+    if (score >= 60) return "text-yellow-600 dark:text-yellow-400";
+    if (score >= 40) return "text-orange-600 dark:text-orange-400";
+    return "text-red-600 dark:text-red-400";
+}
+
+function getCompetencyBgColor(score: number): string {
+    if (score >= 80) return "bg-green-500";
+    if (score >= 60) return "bg-yellow-500";
+    if (score >= 40) return "bg-orange-500";
+    return "bg-red-500";
 }

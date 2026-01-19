@@ -12,15 +12,15 @@ export default function Footer() {
 
                 <div className="flex items-center gap-2 mb-4 md:mb-0">
                     <Image
-                        src="/logo.png"
-                        alt="Interfinity AI Logo"
+                        src="/logo.svg"
+                        alt="Opik Agent Logo"
                         width={24}
                         height={24}
                         className="rounded"
                     />
-                    <span className="font-serif font-bold text-[#424874] dark:text-[#A6B1E1]">Interfinity AI</span>
+                    <span className="font-serif font-bold text-[#424874] dark:text-[#A6B1E1]">Opik Agent</span>
                     <span className="mx-2 text-gray-300 dark:text-gray-700">|</span>
-                    <span>&copy; {new Date().getFullYear()} Interfinity AI.</span>
+                    <span>&copy; {new Date().getFullYear()} Opik Agent.</span>
                 </div>
 
                 {/* Powered by Opik Badge */}

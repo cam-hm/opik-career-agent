@@ -186,9 +186,13 @@ async def generate_interview_feedback(
     if session.feedback_markdown:
         try:
             cached_feedback = json.loads(session.feedback_markdown)
-            # Always attach opik_trace_id if available
+            # Attach observability data for frontend display
             if session.opik_trace_id:
                 cached_feedback["opik_trace_id"] = session.opik_trace_id
+            if session.competency_scores:
+                cached_feedback["competency_scores"] = session.competency_scores
+            if session.skill_assessments:
+                cached_feedback["skill_assessments"] = session.skill_assessments
             return cached_feedback
         except json.JSONDecodeError:
             # If it's not valid JSON (maybe legacy text), regenerate
@@ -235,7 +239,8 @@ async def generate_interview_feedback(
     feedback = await generate_feedback(
         transcript_list,
         resume_text=session.resume_text,
-        job_description=session.job_description
+        job_description=session.job_description,
+        session_id=session_id
     )
     
     # 5. Save to DB
@@ -259,8 +264,13 @@ async def generate_interview_feedback(
     if result.get("rewards") and isinstance(feedback, dict):
         feedback["gamification_rewards"] = result["rewards"]
 
-    # Attach opik_trace_id for observability link
-    if session.opik_trace_id and isinstance(feedback, dict):
-        feedback["opik_trace_id"] = session.opik_trace_id
+    # Attach observability data for frontend display
+    if isinstance(feedback, dict):
+        if session.opik_trace_id:
+            feedback["opik_trace_id"] = session.opik_trace_id
+        if session.competency_scores:
+            feedback["competency_scores"] = session.competency_scores
+        if session.skill_assessments:
+            feedback["skill_assessments"] = session.skill_assessments
 
     return feedback

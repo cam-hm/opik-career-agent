@@ -106,7 +106,8 @@ Be objective. A score of 50 is average. Below 40 is weak. Above 80 is strong."""
         answer: str,
         stage_type: str,
         job_role: str,
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
+        session_id: Optional[str] = None
     ) -> AnswerScore:
         """
         Score a candidate's answer using AI evaluation.
@@ -164,6 +165,25 @@ Be objective. A score of 50 is average. Below 40 is weak. Above 80 is strong."""
 
             latency = (time.time() - start_time) * 1000
             logger.debug(f"Scoring completed in {latency:.0f}ms")
+
+            # Log to Opik observability
+            try:
+                from app.services.core.observability import observability_service, get_current_trace_id
+                await observability_service.log_llm_call(
+                    trace_id=get_current_trace_id(session_id=session_id),
+                    model=self.model,
+                    input_prompt=prompt,
+                    output_response=response.text,
+                    metadata={
+                        "component": "scoring_engine",
+                        "stage_type": stage_type,
+                        "job_role": job_role,
+                        "question_preview": question[:100]
+                    },
+                    latency_ms=latency
+                )
+            except Exception as obs_error:
+                logger.warning(f"Observability logging failed: {obs_error}")
 
             data = json.loads(response.text)
 

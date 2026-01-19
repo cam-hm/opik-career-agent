@@ -10,7 +10,8 @@ import {
     ChevronLeft,
     Menu,
     Map,
-    TrendingUp
+    TrendingUp,
+    BarChart3
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -61,6 +62,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
         { name: "Applications", href: "/applications", icon: Layers },
         { name: "Practice", href: "/practice", icon: PlayCircle },
         { name: "Progress", href: "/progress", icon: TrendingUp },
+        { name: "Analytics", href: "/analytics", icon: BarChart3 },
         { name: "Career", href: "/career", icon: Map },
     ];
 

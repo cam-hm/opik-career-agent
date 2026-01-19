@@ -23,6 +23,8 @@ export const en = {
         practice_sub: "Skill Drills",
         progress: "Progress",
         progress_sub: "Track Growth",
+        analytics: "Analytics",
+        analytics_sub: "AI Insights",
         career: "Career Map",
         career_sub: "Professional Growth",
         menu: "Menu",

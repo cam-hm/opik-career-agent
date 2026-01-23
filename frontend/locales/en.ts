@@ -232,7 +232,10 @@ export const en = {
         finish: "Finish",
         agentConnected: "Opik Agent Connected",
         agentWaiting: "Waiting for AI...",
-        agentIssue: "Connection Unstable",
+        agentInitializing: "Initializing AI components...",
+        agentTakingLonger: "Taking longer than usual...",
+        agentIssue: "Connection may need attention",
+        agentRetry: "Retry Connection",
         checkLogs: "Check System Logs",
     },
     analysis: {

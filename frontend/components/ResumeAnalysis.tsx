@@ -35,6 +35,16 @@ export default function ResumeAnalysis({ sessionId, onStartInterview }: ResumeAn
                     method: "POST"
                 }, getToken)
 
+                // If no resume uploaded (400), skip analysis and go directly to interview
+                if (res.status === 400) {
+                    const errorData = await res.json().catch(() => ({}))
+                    if (errorData.detail?.includes("No resume") || errorData.detail?.includes("resume")) {
+                        // No resume - skip analysis step silently
+                        setLoading(false)
+                        onStartInterview()
+                        return
+                    }
+                }
 
                 if (!res.ok) {
                     throw new Error("Failed to analyze resume")
@@ -51,7 +61,7 @@ export default function ResumeAnalysis({ sessionId, onStartInterview }: ResumeAn
         }
 
         fetchAnalysis()
-    }, [sessionId])
+    }, [sessionId, getToken, onStartInterview])
 
     if (loading) {
         return (

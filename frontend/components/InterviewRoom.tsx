@@ -25,30 +25,37 @@ export default function InterviewRoom({ sessionId }: { sessionId: string }) {
     const [error, setError] = useState<string | null>(null)
     const [mediaEnabled, setMediaEnabled] = useState(true)
     const [sessionDetails, setSessionDetails] = useState<{ stage_type?: string, job_role?: string } | null>(null)
+    const [retryKey, setRetryKey] = useState(0)
+
+    const fetchTokenAndDetails = async () => {
+        try {
+            // Fetch Token
+            const resp = await fetchWithAuth(`${ENDPOINTS.INTERVIEW.TOKEN(sessionId)}?participant_name=Candidate`, {
+                method: 'POST'
+            }, getToken)
+            const data = await resp.json()
+            setToken(data.token)
+
+            // Fetch Session Details
+            const detailsResp = await fetchWithAuth(ENDPOINTS.INTERVIEW.DETAIL(sessionId), {}, getToken)
+            if (detailsResp.ok) {
+                const details = await detailsResp.json()
+                setSessionDetails(details)
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }
 
     useEffect(() => {
-        (async () => {
-            try {
-                // Use environment variable for API URL, fallback to localhost for dev
-                // Fetch Token
-                const resp = await fetchWithAuth(`${ENDPOINTS.INTERVIEW.TOKEN(sessionId)}?participant_name=Candidate`, {
-                    method: 'POST'
-                }, getToken)
-                const data = await resp.json()
-                setToken(data.token)
+        fetchTokenAndDetails()
+    }, [sessionId, getToken, retryKey])
 
-                // Fetch Session Details
-                const detailsResp = await fetchWithAuth(ENDPOINTS.INTERVIEW.DETAIL(sessionId), {}, getToken)
-                if (detailsResp.ok) {
-                    const details = await detailsResp.json()
-                    setSessionDetails(details)
-                }
-
-            } catch (e) {
-                console.error(e)
-            }
-        })()
-    }, [sessionId, getToken])
+    // Soft retry: clear token, get new one, reconnect without leaving room
+    const handleRetry = () => {
+        setToken("") // Show loading briefly
+        setRetryKey(prev => prev + 1) // Trigger refetch
+    }
 
     const handleJoin = async () => {
         try {
@@ -113,7 +120,7 @@ export default function InterviewRoom({ sessionId }: { sessionId: string }) {
         >
             <MyVideoConference />
             <RoomAudioRenderer />
-            <AgentStatusIndicator />
+            <AgentStatusIndicator onRetry={handleRetry} />
             <TranscriptionTile />
 
             {/* Stage Context Badge */}
@@ -178,7 +185,7 @@ function TrackTranscription({ trackRef }: { trackRef: TrackReferenceOrPlaceholde
     )
 }
 
-function AgentStatusIndicator() {
+function AgentStatusIndicator({ onRetry }: { onRetry: () => void }) {
     const { t } = useLanguage();
     const remoteParticipants = useRemoteParticipants();
     const connectionState = useConnectionState();
@@ -209,6 +216,37 @@ function AgentStatusIndicator() {
         return null;
     }
 
+    // Progressive status messages based on wait time
+    const getStatusConfig = () => {
+        if (waitTime <= 5) {
+            return {
+                message: t('interview.agentWaiting'),
+                bgColor: 'bg-yellow-500/80',
+                showRetry: false
+            };
+        } else if (waitTime <= 15) {
+            return {
+                message: t('interview.agentInitializing'),
+                bgColor: 'bg-yellow-500/80',
+                showRetry: false
+            };
+        } else if (waitTime <= 25) {
+            return {
+                message: t('interview.agentTakingLonger'),
+                bgColor: 'bg-orange-500/80',
+                showRetry: false
+            };
+        } else {
+            return {
+                message: t('interview.agentIssue'),
+                bgColor: 'bg-red-500/80',
+                showRetry: true
+            };
+        }
+    };
+
+    const statusConfig = getStatusConfig();
+
     return (
         <div className="absolute top-4 right-4 z-50">
             {isAgentConnected ? (
@@ -217,23 +255,22 @@ function AgentStatusIndicator() {
                     <span className="text-sm font-medium">{t('interview.agentConnected')}</span>
                 </div>
             ) : (
-                <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 bg-yellow-500/80 backdrop-blur-md text-white px-4 py-2 rounded-lg shadow-lg">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm font-medium">{t('interview.agentWaiting')}</span>
-                    </div>
-                    {waitTime > 10 && (
-                        <div className="flex items-center gap-2 bg-red-500/80 backdrop-blur-md text-white px-4 py-2 rounded-lg shadow-lg">
+                <div className="flex flex-col gap-2 items-end">
+                    <div className={`flex items-center gap-2 ${statusConfig.bgColor} backdrop-blur-md text-white px-4 py-2 rounded-lg shadow-lg`}>
+                        {waitTime > 25 ? (
                             <AlertCircle className="w-4 h-4" />
-                            <span className="text-sm font-medium">
-                                {t('interview.agentIssue')} ({waitTime}s)
-                            </span>
-                        </div>
-                    )}
-                    {waitTime > 5 && (
-                        <p className="text-xs text-white/70 bg-black/40 backdrop-blur px-3 py-1 rounded text-center">
-                            {t('interview.checkLogs')}: <code className="text-yellow-300">docker logs interviewer-worker</code>
-                        </p>
+                        ) : (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        )}
+                        <span className="text-sm font-medium">{statusConfig.message}</span>
+                    </div>
+                    {statusConfig.showRetry && (
+                        <button
+                            onClick={onRetry}
+                            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium transition-colors"
+                        >
+                            {t('interview.agentRetry')}
+                        </button>
                     )}
                 </div>
             )}

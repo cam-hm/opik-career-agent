@@ -1,0 +1,91 @@
+steps:
+  # ========================================
+  # 1. BUILD DOCKER IMAGE
+  # ========================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/${PROJECT_ID}/opik-agent-backend:latest'
+      - '.'
+
+  # ========================================
+  # 2. PUSH IMAGE
+  # ========================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push'
+    args: ['push', 'gcr.io/${PROJECT_ID}/opik-agent-backend:latest']
+    waitFor: ['build']
+
+  # ========================================
+  # 3. DEPLOY API SERVICE (BACKEND)
+  # ========================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-api'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'opik-agent-backend'
+      - '--image=gcr.io/${PROJECT_ID}/opik-agent-backend:latest'
+      - '--region=asia-southeast1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--min-instances=1'
+      - '--memory=1Gi'
+      - '--add-cloudsql-instances=${PROJECT_ID}:asia-southeast1:opik-db'
+      # Secrets (Securely injected)
+      - '--set-secrets=LIVEKIT_API_KEY=livekit-api-key:latest'
+      - '--set-secrets=LIVEKIT_API_SECRET=livekit-api-secret:latest'
+      - '--set-secrets=GOOGLE_API_KEY=google-api-key:latest'
+      - '--set-secrets=CARTESIA_API_KEY=cartesia-api-key:latest'
+      - '--set-secrets=OPIK_API_KEY=opik-api-key:latest'
+      - '--set-secrets=DATABASE_URL=backend-database-url:latest'
+      # Config (Non-sensitive)
+      - '--set-env-vars=LIVEKIT_URL=wss://interviewer-wo2fwm01.livekit.cloud'
+      - '--set-env-vars=GEMINI_MODEL=models/gemini-2.5-flash'
+      - '--set-env-vars=SHADOW_MODEL=models/gemini-2.5-flash'
+      - '--set-env-vars=OPIK_ENABLED=true'
+      - '--set-env-vars=OPIK_WORKSPACE=opik-agent'
+      - '--set-env-vars=OPIK_PROJECT_NAME=Opik Career Agent'
+      - '--set-env-vars=CORS_ORIGINS=https://opik-agent-frontend-766703134732.asia-southeast1.run.app'
+    waitFor: ['push']
+
+  # ========================================
+  # 4. DEPLOY WORKER SERVICE
+  # ========================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-worker'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'opik-agent-worker'
+      - '--image=gcr.io/${PROJECT_ID}/opik-agent-backend:latest'
+      - '--region=asia-southeast1'
+      - '--platform=managed'
+      - '--no-allow-unauthenticated'
+      - '--min-instances=1'
+      - '--memory=2Gi' # Worker might need more memory
+      - '--command=bash'
+      - '--args=worker_entrypoint.sh'
+      - '--add-cloudsql-instances=${PROJECT_ID}:asia-southeast1:opik-db'
+      # Secrets (Securely injected)
+      - '--set-secrets=LIVEKIT_API_KEY=livekit-api-key:latest'
+      - '--set-secrets=LIVEKIT_API_SECRET=livekit-api-secret:latest'
+      - '--set-secrets=GOOGLE_API_KEY=google-api-key:latest'
+      - '--set-secrets=CARTESIA_API_KEY=cartesia-api-key:latest'
+      - '--set-secrets=OPIK_API_KEY=opik-api-key:latest'
+      - '--set-secrets=DATABASE_URL=backend-database-url:latest'
+      # Config (Non-sensitive)
+      - '--set-env-vars=LIVEKIT_URL=wss://interviewer-wo2fwm01.livekit.cloud'
+      - '--set-env-vars=GEMINI_MODEL=models/gemini-2.5-flash'
+      - '--set-env-vars=SHADOW_MODEL=models/gemini-2.5-flash'
+      - '--set-env-vars=OPIK_ENABLED=true'
+      - '--set-env-vars=OPIK_WORKSPACE=opik-agent'
+      - '--set-env-vars=OPIK_PROJECT_NAME=Opik Career Agent'
+    waitFor: ['push']
+
+images:
+  - 'gcr.io/${PROJECT_ID}/opik-agent-backend:latest'

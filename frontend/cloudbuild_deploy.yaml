@@ -1,0 +1,31 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/gen-lang-client-0508840012/opik-agent-frontend', '.']
+
+  # Push the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/gen-lang-client-0508840012/opik-agent-frontend']
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'opik-agent-frontend'
+      - '--image'
+      - 'gcr.io/gen-lang-client-0508840012/opik-agent-frontend'
+      - '--region'
+      - 'asia-southeast1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      # CLERK_SECRET_KEY is a sensitive runtime env var. 
+      # ideally set via secrets, but using env var here for speed as requested.
+      # User needs to provide this or I use a placeholder/existing one if known?
+      # Assuming I should look it up or ask, but for now I'll set a placeholder 
+      # and notify user to update it or I check .env
+      - '--set-secrets=CLERK_SECRET_KEY=clerk-secret-key:latest' 
+images:
+  - 'gcr.io/gen-lang-client-0508840012/opik-agent-frontend'

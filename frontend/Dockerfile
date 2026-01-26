@@ -11,8 +11,8 @@ RUN npm ci
 COPY . .
 
 # Build-time env vars (PUBLIC keys only - safe to embed)
-ENV NEXT_PUBLIC_API_URL=https://interviewer-backend-766703134732.asia-southeast1.run.app
-ENV NEXT_PUBLIC_LIVEKIT_URL=wss://interviewer-wo2fwm01.livekit.cloud
+ENV NEXT_PUBLIC_API_URL=https://opik-agent-backend-766703134732.asia-southeast1.run.app
+ENV NEXT_PUBLIC_LIVEKIT_URL=wss://opik-agent-k5ebvg43.livekit.cloud
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_YnJpZ2h0LXVuaWNvcm4tMTIuY2xlcmsuYWNjb3VudHMuZGV2JA
 ENV NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard
 ENV NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashboard

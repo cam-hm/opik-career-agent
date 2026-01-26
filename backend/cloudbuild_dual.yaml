@@ -67,10 +67,19 @@ steps:
       - '--platform=managed'
       - '--no-allow-unauthenticated'
       - '--port=8080'
+      # === CRITICAL FOR LIVEKIT AGENTS ===
+      # Keep CPU always active (no throttling when idle)
+      - '--no-cpu-throttling'
+      # Faster startup with CPU boost during container init
+      - '--cpu-boost'
+      # Always keep 1 instance warm and ready
       - '--min-instances=1'
+      - '--max-instances=2'
+      # Resources for AI workload
       - '--memory=8Gi'
-      - '--cpu=2'
+      - '--cpu=4'
       - '--execution-environment=gen2'
+      - '--timeout=3600'
       - '--command=bash'
       - '--args=worker_entrypoint.sh'
       - '--add-cloudsql-instances=${PROJECT_ID}:asia-southeast1:opik-db'
@@ -89,7 +98,7 @@ steps:
       - '--set-env-vars=OPIK_WORKSPACE=opik-agent'
       - '--set-env-vars=OPIK_PROJECT_NAME=Opik Career Agent'
       - '--set-env-vars=PYTHONUNBUFFERED=1'
-      - '--set-env-vars=LIVEKIT_AGENT_INITIALIZATION_TIMEOUT=120'
+      - '--set-env-vars=LIVEKIT_AGENT_INITIALIZATION_TIMEOUT=180'
     waitFor: ['push']
 
 images:

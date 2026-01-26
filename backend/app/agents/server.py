@@ -8,7 +8,7 @@ import asyncio
 from dotenv import load_dotenv
 
 from livekit import agents
-from livekit.agents import AgentServer, AgentSession, Agent
+from livekit.agents import AgentServer, AgentSession, Agent, JobProcess
 from livekit.agents import ConversationItemAddedEvent, UserInputTranscribedEvent
 from livekit.plugins import google, silero, cartesia
 from sqlalchemy import select
@@ -17,29 +17,18 @@ from app.services.core.database import AsyncSessionLocal
 from app.models.interview import InterviewSession
 from config.settings import get_settings
 from app.agents.transcript import TranscriptManager
-from app.services.core.intelligence.prompt_manager import prompt_manager
-from app.services.core.intelligence.shadow_monitor import shadow_monitor
-from app.services.core.observability import (
-    traced_session,
-    log_turn_event,
-    evaluate_session_post_completion,
-    observability_service,
-)
-
-# Intelligence v2 imports
-from app.services.core.intelligence.candidate_profile import (
-    candidate_profile_manager,
-    CandidateProfile
-)
-from app.services.core.intelligence.scoring_engine import scoring_engine
-from app.services.core.intelligence.difficulty_adapter import (
-    difficulty_adapter,
-    DifficultyLevel,
-    DifficultyState
-)
-from app.services.core.intelligence.competency_evaluator import competency_evaluator
-from app.services.core.intelligence.cross_stage_memory import cross_stage_memory
-from app.services.core.intelligence.question_generator import question_generator
+# ============================================
+# LAZY IMPORTS for faster subprocess startup
+# ============================================
+# These modules import heavy dependencies (Google Gemini SDK, etc.)
+# Moving to lazy imports to avoid reloading in spawned subprocesses
+#
+# DO NOT import at module level:
+# - prompt_manager, shadow_monitor, observability
+# - candidate_profile_manager, scoring_engine, difficulty_adapter
+# - competency_evaluator, cross_stage_memory, question_generator
+#
+# Instead, import inside functions when needed
 
 load_dotenv()
 
@@ -57,15 +46,69 @@ class InterviewAssistant(Agent):
         super().__init__(instructions=instructions)
 
 
-# Create server instance
-server = AgentServer()
+# ============================================
+# CLOUD RUN OPTIMIZED SERVER CONFIGURATION
+# ============================================
+# Key optimizations for Cloud Run:
+# 1. initialize_process_timeout: Default 10s is too short for cold starts
+# 2. multiprocessing_context: 'spawn' is more reliable in containers
+# 3. num_idle_processes: Keep minimal to reduce memory usage
+# 4. shutdown_process_timeout: Allow graceful shutdown
+server = AgentServer(
+    initialize_process_timeout=180.0,  # 3 minutes (default: 10s) - critical for cold start!
+    shutdown_process_timeout=30.0,     # Graceful shutdown timeout
+    multiprocessing_context="spawn",   # Better for containers (default: forkserver on Linux)
+    num_idle_processes=1,              # Keep only 1 warm process (default: CPU count)
+)
+
+
+def prewarm(proc: JobProcess):
+    """
+    Prewarm function - called once when process starts.
+    Pre-loads ML models to avoid timeout during first job.
+
+    This is CRITICAL for Cloud Run deployment where cold start
+    + model loading can exceed initialization timeout.
+    """
+    logger.info("🔥 Prewarming: Loading Silero VAD model...")
+    proc.userdata["vad"] = silero.VAD.load()
+    logger.info("✅ Prewarm complete: VAD model loaded and cached")
+
+
+# Register prewarm function - runs before any jobs are accepted
+server.setup_fnc = prewarm
 
 
 @server.rtc_session()
 async def interview_agent(ctx: agents.JobContext):
     """Main agent entry point - runs for each interview session."""
     logger.info(f"Agent joining room: {ctx.room.name}")
-    
+
+    # ============================================
+    # LAZY IMPORTS - Load heavy modules only when job starts
+    # This avoids loading Google Gemini SDK etc. during subprocess spawn
+    # ============================================
+    from app.services.core.intelligence.prompt_manager import prompt_manager
+    from app.services.core.intelligence.shadow_monitor import shadow_monitor
+    from app.services.core.observability import (
+        log_turn_event,
+        evaluate_session_post_completion,
+        observability_service,
+    )
+    from app.services.core.intelligence.candidate_profile import (
+        candidate_profile_manager,
+        CandidateProfile
+    )
+    from app.services.core.intelligence.scoring_engine import scoring_engine
+    from app.services.core.intelligence.difficulty_adapter import (
+        difficulty_adapter,
+        DifficultyLevel,
+        DifficultyState
+    )
+    from app.services.core.intelligence.competency_evaluator import competency_evaluator
+    from app.services.core.intelligence.cross_stage_memory import cross_stage_memory
+    logger.info("✅ Lazy imports loaded")
+
     # Fetch session details from database
     stage_type = "hr"
     job_role = "General"
@@ -183,8 +226,9 @@ async def interview_agent(ctx: agents.JobContext):
 
 
         
-        logger.info("Initializing VAD (Silero)...")
-        vad_plugin = silero.VAD.load()
+        # Use pre-loaded VAD from prewarm (avoids timeout on cold start)
+        logger.info("Using pre-loaded VAD (Silero) from prewarm...")
+        vad_plugin = ctx.proc.userdata["vad"]
         
         # Create agent session with AI components
         session = AgentSession(

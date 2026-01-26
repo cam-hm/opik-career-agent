@@ -43,7 +43,7 @@ steps:
       - '--set-secrets=OPIK_API_KEY=opik-api-key:latest'
       - '--set-secrets=DATABASE_URL=backend-database-url:latest'
       # Config (Non-sensitive)
-      - '--set-env-vars=LIVEKIT_URL=wss://interviewer-wo2fwm01.livekit.cloud'
+      - '--set-env-vars=LIVEKIT_URL=wss://opik-agent-k5ebvg43.livekit.cloud'
       - '--set-env-vars=GEMINI_MODEL=models/gemini-2.5-flash'
       - '--set-env-vars=SHADOW_MODEL=models/gemini-2.5-flash'
       - '--set-env-vars=OPIK_ENABLED=true'
@@ -66,8 +66,11 @@ steps:
       - '--region=asia-southeast1'
       - '--platform=managed'
       - '--no-allow-unauthenticated'
+      - '--port=8080'
       - '--min-instances=1'
-      - '--memory=2Gi' # Worker might need more memory
+      - '--memory=8Gi'
+      - '--cpu=2'
+      - '--execution-environment=gen2'
       - '--command=bash'
       - '--args=worker_entrypoint.sh'
       - '--add-cloudsql-instances=${PROJECT_ID}:asia-southeast1:opik-db'
@@ -79,12 +82,14 @@ steps:
       - '--set-secrets=OPIK_API_KEY=opik-api-key:latest'
       - '--set-secrets=DATABASE_URL=backend-database-url:latest'
       # Config (Non-sensitive)
-      - '--set-env-vars=LIVEKIT_URL=wss://interviewer-wo2fwm01.livekit.cloud'
+      - '--set-env-vars=LIVEKIT_URL=wss://opik-agent-k5ebvg43.livekit.cloud'
       - '--set-env-vars=GEMINI_MODEL=models/gemini-2.5-flash'
       - '--set-env-vars=SHADOW_MODEL=models/gemini-2.5-flash'
       - '--set-env-vars=OPIK_ENABLED=true'
       - '--set-env-vars=OPIK_WORKSPACE=opik-agent'
       - '--set-env-vars=OPIK_PROJECT_NAME=Opik Career Agent'
+      - '--set-env-vars=PYTHONUNBUFFERED=1'
+      - '--set-env-vars=LIVEKIT_AGENT_INITIALIZATION_TIMEOUT=120'
     waitFor: ['push']
 
 images:

@@ -53,14 +53,15 @@ if ! command -v docker &> /dev/null; then
     sh get-docker.sh
 fi
 
-# Wait for Docker
+# Wait for Docker daemon
 sleep 5
 
 # Authenticate with GCR
 gcloud auth configure-docker gcr.io --quiet
 
-# Get secrets from metadata
-PROJECT_ID=$(curl -s "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
+# Create /cloudsql directory if not exists
+mkdir -p /cloudsql
+chmod 777 /cloudsql
 
 # Fetch secrets from Secret Manager
 LIVEKIT_API_KEY=$(gcloud secrets versions access latest --secret="livekit-api-key")
@@ -69,9 +70,16 @@ GOOGLE_API_KEY=$(gcloud secrets versions access latest --secret="google-api-key"
 CARTESIA_API_KEY=$(gcloud secrets versions access latest --secret="cartesia-api-key")
 OPIK_API_KEY=$(gcloud secrets versions access latest --secret="opik-api-key")
 
-# Start Cloud SQL Proxy
+# ============================================
+# CLOUD SQL PROXY (idempotent - handles reboot)
+# ============================================
 echo "Starting Cloud SQL Proxy..."
 docker pull gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.0
+
+# Stop and remove existing container if exists
+docker stop cloud-sql-proxy 2>/dev/null || true
+docker rm cloud-sql-proxy 2>/dev/null || true
+
 docker run -d --name cloud-sql-proxy \
     --restart=always \
     -v /cloudsql:/cloudsql \
@@ -79,12 +87,18 @@ docker run -d --name cloud-sql-proxy \
     --unix-socket /cloudsql \
     gen-lang-client-0508840012:asia-southeast1:opik-db
 
-# Wait for proxy
+# Wait for proxy to be ready
 sleep 5
 
-# Pull and run worker
+# ============================================
+# LIVEKIT AGENT WORKER (idempotent - handles reboot)
+# ============================================
 echo "Starting LiveKit Agent Worker..."
 docker pull gcr.io/gen-lang-client-0508840012/opik-agent-backend:latest
+
+# Stop and remove existing container if exists
+docker stop opik-worker 2>/dev/null || true
+docker rm opik-worker 2>/dev/null || true
 
 docker run -d --name opik-worker \
     --restart=always \

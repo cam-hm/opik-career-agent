@@ -11,7 +11,7 @@ But unlike standard chatbots, **Opik Career Agent offers proof**. We integrate *
 
 ## 🎥 Demo
 
-[Insert Demo Video Link Here]
+[DEMO VIDEO](https://youtu.be/lVet0DOQflY)
 
 ## ⚡ Key Features
 
